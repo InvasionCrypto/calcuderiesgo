@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de posiciones de futuros</title>
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-image: url("https://pbs.twimg.com/profile_banners/1402738329532129280/1637698479/1500x500");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-color: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      width: 300px;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 8px;
+      opacity: 0.95;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #fff;
+      color: #222;
+      font-size: 14px;
+    }
+
+    input[disabled] {
+      background-color: transparent;
+      color: #fff;
+      border: none;
+      padding: 0;
+    }
+
+    .form-group label.disabled {
+      color: #aaa;
+    }
+
+    .form-group label.disabled::after {
+      content: ':';
+    }
+
+    .form-group label.disabled + input {
+      background-color: transparent;
+      color: #fff;
+    }
+
+    .form-group label.disabled + input[disabled] {
+      background-color: transparent;
+      color: #aaa;
+      border: none;
+      padding: 0;
+    }
+
+    .form-group label.disabled + input[disabled]::placeholder {
+      color: #aaa;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .button-container button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .button-container button:hover {
+      background-color: #45a049;
+    }
+
+    .form-group.no-margin {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    function App() {
+      const [portfolioSize, setPortfolioSize] = useState(0);
+      const [riskToAssume, setRiskToAssume] = useState(0);
+      const [stopLossSignal, setStopLossSignal] = useState(0);
+      const [leverage, setLeverage] = useState(0);
+
+      const maxLossPerTrade = portfolioSize * (riskToAssume / 100);
+      const stopLossPosition = stopLossSignal * (leverage);
+      const investmentAmount = (maxLossPerTrade && stopLossPosition) ? ((maxLossPerTrade / stopLossPosition * 100)).toFixed(2) : '-';
+
+      const resetFields = () => {
+        setPortfolioSize(0);
+        setRiskToAssume(0);
+        setStopLossSignal(0);
+        setLeverage(0);
+      };
+
+      return (
+        <div className="container">
+          <h1>Calculadora de posiciones de futuros</h1>
+
+          <div className="form-group">
+            <label htmlFor="portfolio-size">Tamaño de cartera (USD)</label>
+            <input
+              type="number"
+              id="portfolio-size"
+              value={portfolioSize}
+              onChange={(e) => setPortfolioSize(parseFloat(e.target.value))}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="risk-assume">Riesgo a asumir (%)</label>
+            <input
+              type="number"
+              id="risk-assume"
+              value={riskToAssume}
+              onChange={(e) => setRiskToAssume(parseFloat(e.target.value))}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className={maxLossPerTrade ? 'disabled' : ''}>Pérdida máxima por trade</label>
+            <input type="text" disabled value={`${maxLossPerTrade.toFixed(2)}`} />
+          </div>
+
+          <div className="form-group no-margin">
+            <label htmlFor="stop-loss-signal">Stop Loss de la señal</label>
+            <input
+              type="number"
+              id="stop-loss-signal"
+              value={stopLossSignal}
+              onChange={(e) => setStopLossSignal(parseFloat(e.target.value))}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="leverage">Apalancamiento (%)</label>
+            <input
+              type="number"
+              id="leverage"
+              value={leverage}
+              onChange={(e) => setLeverage(parseFloat(e.target.value))}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className={stopLossPosition ? 'disabled' : ''}>Stop Loss de la posición</label>
+            <input type="text" disabled value={`${stopLossPosition.toFixed(2)}%`} />
+          </div>
+
+          <div className="form-group">
+            <label className={investmentAmount === '-' ? 'disabled' : ''}>Cantidad a invertir</label>
+            <input type="text" disabled value={investmentAmount} />
+          </div>
+
+          <div className="button-container">
+            <button onClick={resetFields}>Limpiar</button>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
